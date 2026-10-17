@@ -84,15 +84,22 @@ def rag(
     max_tokens: int = 512,
     vectorstore=None
 ):
+    # Prepare arguments for ChatOpenAI dynamically
+    client_kwargs = {
+        "model": model_name,
+        "temperature": temperature,
+        "top_p": top_p,
+        "max_tokens": max_tokens,
+        "openai_api_key": os.getenv('OPENAI_API_KEY')
+    }
+    
+    # Only set api_base if it is explicitly provided as a non-empty string
+    api_base = os.getenv('OPENAI_API_BASE')
+    if api_base and api_base.strip():
+        client_kwargs["openai_api_base"] = api_base.strip()
+
     # Create the generator model
-    model = ChatOpenAI(
-        model=model_name,
-        temperature=temperature,
-        top_p=top_p,
-        max_tokens=max_tokens,
-        openai_api_key=os.getenv('OPENAI_API_KEY'),
-        openai_api_base=os.getenv('OPENAI_API_BASE')
-    )
+    model = ChatOpenAI(**client_kwargs)
 
     # Retrieve relevant chunks
     retrieved_chunks = retrieve(query=query, k=k,vectorstore=vectorstore)
